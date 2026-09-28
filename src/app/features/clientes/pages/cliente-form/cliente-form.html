@@ -1,0 +1,94 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+
+        <!-- DNI -->
+        <div class="mb-3">
+          <label class="form-label">DNI</label>
+          <input type="text" class="form-control" formControlName="dni" maxlength="8" placeholder="Ingrese 8 dígitos">
+          @if (form.get('dni')?.touched && form.get('dni')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (form.get('dni')?.hasError('required')) { El DNI es obligatorio. }
+              @if (form.get('dni')?.hasError('pattern')) { El DNI debe tener exactamente 8 dígitos numéricos[cite: 13]. }
+            </div>
+          }
+        </div>
+
+        <!-- Nombres -->
+        <div class="mb-3">
+          <label class="form-label">Nombres</label>
+          <input type="text" class="form-control" formControlName="nombres" placeholder="Nombres del cliente">
+          @if (form.get('nombres')?.touched && form.get('nombres')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (form.get('nombres')?.hasError('required')) { Los nombres son obligatorios. }
+              @if (form.get('nombres')?.hasError('minlength') || form.get('nombres')?.hasError('maxlength')) { Debe tener entre 2 y 100 caracteres[cite: 13]. }
+            </div>
+          }
+        </div>
+
+        <!-- Apellidos -->
+        <div class="mb-3">
+          <label class="form-label">Apellidos</label>
+          <input type="text" class="form-control" formControlName="apellidos" placeholder="Apellidos del cliente">
+          @if (form.get('apellidos')?.touched && form.get('apellidos')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (form.get('apellidos')?.hasError('required')) { Los apellidos son obligatorios. }
+              @if (form.get('apellidos')?.hasError('minlength') || form.get('apellidos')?.hasError('maxlength')) { Debe tener entre 2 y 100 caracteres[cite: 13]. }
+            </div>
+          }
+        </div>
+
+        <!-- Correo Electrónico -->
+        <div class="mb-3">
+          <label class="form-label">Correo Electrónico</label>
+          <input type="email" class="form-control" formControlName="email" placeholder="correo@ejemplo.com">
+          @if (form.get('email')?.touched && form.get('email')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (form.get('email')?.hasError('required')) { El correo es obligatorio. }
+              @if (form.get('email')?.hasError('email')) { Formato de correo inválido[cite: 13]. }
+            </div>
+          }
+        </div>
+
+        <!-- Teléfono -->
+        <div class="mb-3">
+          <label class="form-label">Teléfono (Opcional)</label>
+          <input type="text" class="form-control" formControlName="telefono" maxlength="9" placeholder="9 dígitos (opcional)">
+          @if (form.get('telefono')?.touched && form.get('telefono')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (form.get('telefono')?.hasError('pattern')) { El teléfono debe tener exactamente 9 dígitos[cite: 13]. }
+            </div>
+          }
+        </div>
+
+        <!-- Dirección -->
+        <div class="mb-3">
+          <label class="form-label">Dirección (Opcional)</label>
+          <input type="text" class="form-control" formControlName="direccion" placeholder="Dirección del cliente (máx. 250 caracteres)">
+          @if (form.get('direccion')?.touched && form.get('direccion')?.invalid) {
+            <div class="text-danger small mt-1">
+              @if (form.get('direccion')?.hasError('maxlength')) { Máximo 250 caracteres[cite: 13]. }
+            </div>
+          }
+        </div>
+
+        <!-- Estado -->
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" formControlName="estado" id="estadoCheck">
+          <label class="form-check-label" for="estadoCheck">Activo</label>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="d-flex justify-content-end gap-2">
+          <a routerLink="/clientes" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-success" [disabled]="form.invalid">Guardar</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

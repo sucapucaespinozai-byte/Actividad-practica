@@ -1,0 +1,89 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Gestión de Clientes</h2>
+    <a routerLink="nuevo" class="btn btn-primary">Nuevo Cliente</a>
+  </div>
+
+  <!-- Filtro y Selector de tamaño -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por DNI, nombres o apellidos..."
+        [value]="filtro()"
+        (input)="filtro.set($any($event.target).value)">
+    </div>
+    <div class="col-md-6 text-end">
+      <label class="me-2">Mostrar:</label>
+      <select class="form-select d-inline-block w-auto" [value]="tamanio()" (change)="cambiarTamanio($any($event.target).value)">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Estado de Carga -->
+  @if (cargando()) {
+    <div class="text-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  } @else {
+    <!-- Tabla de Clientes -->
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+        <tr>
+          <th (click)="ordenar('dni')" style="cursor: pointer;">DNI ↕</th>
+          <th (click)="ordenar('apellidos')" style="cursor: pointer;">Apellidos y Nombres ↕</th>
+          <th (click)="ordenar('email')" style="cursor: pointer;">Correo ↕</th>
+          <th>Teléfono</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (cliente of clientesFiltrados(); track cliente.id) {
+            <tr>
+              <td>{{ cliente.dni }}</td>
+              <td>{{ cliente.apellidos }}, {{ cliente.nombres }}</td>
+              <td>{{ cliente.email }}</td>
+              <td>{{ cliente.telefono || '-' }}</td>
+              <td>
+                <span class="badge" [ngClass]="cliente.estado ? 'bg-success' : 'bg-secondary'">
+                  {{ cliente.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <a [routerLink]="[cliente.id, 'editar']" class="btn btn-sm btn-warning me-2" title="Editar">✏️</a>
+                <button class="btn btn-sm btn-danger" (click)="eliminar(cliente.id)" title="Dar de baja">🗑️</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-4">No se encontraron clientes registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div>
+        <span>Página {{ paginaActual() + 1 }} de {{ totalPaginas() || 1 }}. Total: {{ totalElementos() }} clientes.</span>
+      </div>
+      <div>
+        <button class="btn btn-outline-secondary me-2" [disabled]="paginaActual() === 0" (click)="cambiarPagina(paginaActual() - 1)">
+          &lt;&lt; Anterior
+        </button>
+        <button class="btn btn-outline-secondary" [disabled]="ultima()" (click)="cambiarPagina(paginaActual() + 1)">
+          Siguiente &gt;&gt;
+        </button>
+      </div>
+    </div>
+  }
+</div>
