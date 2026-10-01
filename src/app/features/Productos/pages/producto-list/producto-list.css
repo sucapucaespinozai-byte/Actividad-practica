@@ -1,0 +1,70 @@
+.container {
+  max-width: 100%;
+}
+
+.table {
+  width: 100%;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.35em 0.7em;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bg-success {
+  background-color: #198754;
+  color: #fff;
+}
+
+.bg-danger {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn {
+  border: 0;
+  border-radius: 0.35rem;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.me-2 {
+  margin-right: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}

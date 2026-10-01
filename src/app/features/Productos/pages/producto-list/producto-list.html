@@ -1,0 +1,38 @@
+<div class="container mt-4">
+  <table class="table table-striped table-bordered">
+    <tbody>
+      @if (paginaData && paginaData.contenido && paginaData.contenido.length > 0) {
+        @for (prod of paginaData.contenido; track prod.id) {
+          <tr>
+            <td>
+              <span [ngClass]="prod.estado ? 'badge bg-success' : 'badge bg-danger'">
+                {{ prod.estado ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td>
+              <button type="button" (click)="editar(prod.id)" class="btn btn-sm btn-warning me-2">Editar</button>
+              <button type="button" (click)="eliminar(prod.id)" class="btn btn-sm btn-danger">Eliminar</button>
+            </td>
+          </tr>
+        }
+      } @else {
+        <tr>
+          <td colspan="7" class="text-center">No hay productos registrados.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <!-- Controles de Paginación -->
+  @if (paginaData) {
+    <div class="d-flex justify-content-between align-items-center">
+      <button class="btn btn-secondary" [disabled]="paginaActual === 0" (click)="cambiarPagina(paginaActual - 1)">
+        Anterior
+      </button>
+      <span>Página {{ paginaActual + 1 }} de {{ paginaData.totalPaginas }}</span>
+      <button class="btn btn-secondary" [disabled]="paginaData.ultima" (click)="cambiarPagina(paginaActual + 1)">
+        Siguiente
+      </button>
+    </div>
+  }
+</div>
