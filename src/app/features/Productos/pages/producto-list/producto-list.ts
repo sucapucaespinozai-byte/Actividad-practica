@@ -38,7 +38,7 @@ export class ProductoList implements OnInit {
 
     this.productoService.listar(this.pagina(), this.tamanio(), sortParam).subscribe({
       next: (respuesta) => {
-        this.productos.set(respuesta.content);
+        this.productos.set(respuesta.content ?? (respuesta as any).contenido);
         this.totalPaginas.set(respuesta.totalPages);
         this.totalElementos.set(respuesta.totalElements);
         this.cargando.set(false);

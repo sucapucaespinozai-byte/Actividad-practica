@@ -21,6 +21,11 @@ export const routes: Routes = [
         component: Inicio,
       },
       {
+        path: 'categorias',
+        loadChildren: () =>
+          import('./features/Categorias/categorias.routes').then((m) => m.CATEGORIAS_ROUTES),
+      },
+      {
         path: 'clientes',
         children: [
           { path: '', component: ClienteList },
