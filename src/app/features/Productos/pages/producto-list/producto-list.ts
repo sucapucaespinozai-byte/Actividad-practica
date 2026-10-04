@@ -1,69 +1,82 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { PaginaResponse } from '../../../../core/models/pagina-response';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Producto } from '../../models/producto.model';
 import { ProductoService } from '../../services/producto-service';
+import { mensajeError } from '../../../../core/utils/http-error';
 
 @Component({
   selector: 'app-producto-list',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, CurrencyPipe],
   templateUrl: './producto-list.html',
+  styleUrl: './producto-list.css',
 })
 export class ProductoList implements OnInit {
   private readonly productoService = inject(ProductoService);
-  private readonly router = inject(Router);
 
-  paginaData: PaginaResponse<Producto> | null = null;
-  paginaActual = 0;
-  cargando = false;
+  protected readonly productos = signal<Producto[]>([]);
+  protected readonly cargando = signal(true);
+  protected readonly error = signal<string | null>(null);
+
+  protected readonly pagina = signal(0);
+  protected readonly tamanio = signal(5);
+  protected readonly totalPaginas = signal(0);
+  protected readonly totalElementos = signal(0);
+  protected readonly ordenarPor = signal<string>('id');
+  protected readonly direccion = signal<string>('asc');
 
   ngOnInit(): void {
     this.cargarProductos();
   }
 
   cargarProductos(): void {
-    this.cargando = true;
+    this.cargando.set(true);
+    this.error.set(null);
 
-    this.productoService.listar(this.paginaActual, 10, 'id', 'asc').subscribe({
-      next: (response) => {
-        this.paginaData = response;
-        this.cargando = false;
+    const sortParam = `${this.ordenarPor()},${this.direccion()}`;
+
+    this.productoService.listar(this.pagina(), this.tamanio(), sortParam).subscribe({
+      next: (respuesta) => {
+        this.productos.set(respuesta.content);
+        this.totalPaginas.set(respuesta.totalPages);
+        this.totalElementos.set(respuesta.totalElements);
+        this.cargando.set(false);
       },
-      error: (err) => {
-        console.error('Error al cargar productos', err);
-        this.cargando = false;
+      error: (err: HttpErrorResponse) => {
+        this.error.set(mensajeError(err));
+        this.cargando.set(false);
       },
     });
   }
 
   cambiarPagina(nuevaPagina: number): void {
-    if (!this.paginaData || nuevaPagina < 0 || nuevaPagina >= this.paginaData.totalPaginas) {
-      return;
+    if (nuevaPagina >= 0 && nuevaPagina < this.totalPaginas()) {
+      this.pagina.set(nuevaPagina);
+      this.cargarProductos();
     }
+  }
 
-    this.paginaActual = nuevaPagina;
+  ordenar(campo: string): void {
+    if (this.ordenarPor() === campo) {
+      this.direccion.set(this.direccion() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.ordenarPor.set(campo);
+      this.direccion.set('asc');
+    }
     this.cargarProductos();
   }
 
-  editar(id: number): void {
-    this.router.navigate(['/productos', id, 'editar']);
-  }
+  darDeBaja(producto: Producto): void {
+    if (!producto.id) return;
 
-  eliminar(id: number): void {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) {
+    if (!confirm(`¿Dar de baja el producto "${producto.nombre}"?`)) {
       return;
     }
 
-    this.productoService.darDeBaja(id).subscribe({
-      next: () => {
-        this.cargarProductos();
-      },
-      error: (err) => {
-        console.error('Error al eliminar el producto', err);
-        alert('No se pudo eliminar el producto.');
-      },
+    this.productoService.darDeBaja(producto.id).subscribe({
+      next: () => this.cargarProductos(),
+      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
     });
   }
 }

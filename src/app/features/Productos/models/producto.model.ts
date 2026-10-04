@@ -1,13 +1,10 @@
-export type Direccion = 'asc' | 'desc';
-export type OrdenProducto = 'id' | 'nombre' | 'precio' | 'stock';
-
 export interface Producto {
-  id: number;
+  id?: number;
   nombre: string;
   precio: number;
   stock: number;
   estado: boolean;
-  categoriald: number;
+  categoriaId: number;
   categoriaNombre?: string;
 }
 
@@ -16,5 +13,5 @@ export interface ProductoRequest {
   precio: number;
   stock: number;
   estado: boolean;
-  categoriald: number;
+  categoriaId: number;
 }

@@ -5,5 +5,5 @@ import { ProductoForm } from './pages/producto-form/producto-form';
 export const PRODUCTOS_ROUTES: Routes = [
   { path: '', component: ProductoList, title: 'Productos' },
   { path: 'nuevo', component: ProductoForm, title: 'Nuevo producto' },
-  { path: ':id/editar', component: ProductoForm, title: 'Editar producto' }
+  { path: ':id/editar', component: ProductoForm, title: 'Editar producto' },
 ];

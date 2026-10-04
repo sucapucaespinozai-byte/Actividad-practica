@@ -1,89 +1,131 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { ProductoService } from '../../services/producto-service';
-import { CategoriaService } from '../../../Categorias/services/categoria-service';
+import { erroresDeValidacion, mensajeError } from '../../../../core/utils/http-error';
 import { Categoria } from '../../../Categorias/models/categoria.model';
+import { CategoriaService } from '../../../Categorias/services/categoria-service';
+import { ProductoRequest } from '../../models/producto.model';
+import { ProductoService } from '../../services/producto-service';
 
 @Component({
   selector: 'app-producto-form',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './producto-form.html',
-  styleUrls: ['./producto-form.css'],
+  styleUrl: './producto-form.css',
 })
 export class ProductoForm implements OnInit {
-  private readonly fb = inject(FormBuilder);
+  private readonly fb = inject(NonNullableFormBuilder);
   private readonly productoService = inject(ProductoService);
   private readonly categoriaService = inject(CategoriaService);
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
 
-  form!: FormGroup;
-  categorias: Categoria[] = [];
-  idEdicion: number | null = null;
-  esEdicion = false;
+  readonly id = input<string>();
+
+  protected readonly categorias = signal<Categoria[]>([]);
+  protected readonly categoriaOriginal = signal<number | null>(null);
+  protected readonly cargando = signal(true);
+  protected readonly guardando = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly erroresServidor = signal<Record<string, string>>({});
+
+  protected readonly form = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
+    precio: this.fb.control<number | null>(null, {
+      validators: [Validators.required, Validators.min(0.01)],
+    }),
+    stock: this.fb.control<number | null>(0, {
+      validators: [Validators.required, Validators.min(0), Validators.pattern(/^\d+$/)],
+    }),
+    estado: [true],
+    categoriaId: this.fb.control<number | null>(null, { validators: [Validators.required] }),
+  });
+
+  protected readonly opciones = computed(() =>
+    this.categorias().filter((c) => c.estado || c.id === this.categoriaOriginal()),
+  );
+
+  protected readonly hayCategoriasActivas = computed(() => this.categorias().some((c) => c.estado));
+
+  private readonly categoriaElegida = toSignal(this.form.controls.categoriaId.valueChanges, {
+    initialValue: null,
+  });
+
+  protected readonly categoriaInactiva = computed(() => {
+    const elegida = this.categorias().find((c) => c.id === this.categoriaElegida());
+    return !!elegida && !elegida.estado;
+  });
+
+  // Convertido a computed para que funcione con los paréntesis en el HTML
+  protected readonly esEdicion = computed(() => !!this.id());
 
   ngOnInit(): void {
-    this.initForm();
-    this.idEdicion = Number(this.route.snapshot.paramMap.get('id'));
-
-    if (this.idEdicion) {
-      this.esEdicion = true;
+    const id = this.id();
+    if (id) {
       forkJoin({
         categorias: this.categoriaService.listar(),
-        producto: this.productoService.obtener(this.idEdicion)
+        producto: this.productoService.obtener(Number(id)),
       }).subscribe({
         next: ({ categorias, producto }) => {
-          this.categorias = categorias;
-          this.form.patchValue({
+          this.categorias.set(categorias);
+          this.categoriaOriginal.set(producto.categoriaId);
+          this.form.setValue({
             nombre: producto.nombre,
             precio: producto.precio,
             stock: producto.stock,
             estado: producto.estado,
-            categoriald: producto.categoriald
+            categoriaId: producto.categoriaId,
           });
+          this.cargando.set(false);
         },
-        error: (err) => console.error('Error al cargar datos de edición:', err)
+        error: (err: HttpErrorResponse) => this.fallarCarga(err),
       });
     } else {
       this.categoriaService.listar().subscribe({
-        next: (data) => this.categorias = data,
-        error: (err) => console.error('Error al cargar categorías:', err)
+        next: (categorias) => {
+          this.categorias.set(categorias);
+          this.cargando.set(false);
+        },
+        error: (err: HttpErrorResponse) => this.fallarCarga(err),
       });
     }
   }
 
-  private initForm(): void {
-    this.form = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(3)]],
-      precio: [0, [Validators.required, Validators.min(0.01)]],
-      stock: [0, [Validators.required, Validators.min(0)]],
-      estado: [true, Validators.required],
-      categoriald: ['', Validators.required]
-    });
-  }
-
   guardar(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.categoriaInactiva()) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const dto = this.form.value;
+    const v = this.form.getRawValue();
+    const dto: ProductoRequest = {
+      nombre: v.nombre.trim(),
+      precio: Number(v.precio),
+      stock: Number(v.stock),
+      estado: v.estado,
+      categoriaId: Number(v.categoriaId),
+    };
 
-    if (this.esEdicion && this.idEdicion) {
-      this.productoService.actualizar(this.idEdicion, dto).subscribe({
-        next: () => this.router.navigate(['/productos']),
-        error: (err) => console.error('Error al actualizar:', err)
-      });
-    } else {
-      this.productoService.crear(dto).subscribe({
-        next: () => this.router.navigate(['/productos']),
-        error: (err) => console.error('Error al crear:', err)
-      });
-    }
+    const id = this.id();
+    const peticion = id
+      ? this.productoService.actualizar(Number(id), dto)
+      : this.productoService.crear(dto);
+
+    this.guardando.set(true);
+    peticion.subscribe({
+      next: () => this.router.navigate(['/productos']),
+      error: (err: HttpErrorResponse) => {
+        this.guardando.set(false);
+        this.error.set(mensajeError(err));
+        this.erroresServidor.set(erroresDeValidacion(err));
+      },
+    });
+  }
+
+  private fallarCarga(err: HttpErrorResponse): void {
+    this.error.set(mensajeError(err));
+    this.cargando.set(false);
   }
 }
