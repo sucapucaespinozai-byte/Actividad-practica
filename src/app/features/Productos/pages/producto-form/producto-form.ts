@@ -44,21 +44,22 @@ export class ProductoForm implements OnInit {
   });
 
   protected readonly opciones = computed(() =>
-    this.categorias().filter((c) => c.estado || c.id === this.categoriaOriginal()),
+    this.categorias().filter((c: any) => c.activo === 1 || c.id === this.categoriaOriginal()),
   );
 
-  protected readonly hayCategoriasActivas = computed(() => this.categorias().some((c) => c.estado));
+  protected readonly hayCategoriasActivas = computed(() =>
+    this.categorias().some((c: any) => c.activo === 1),
+  );
 
   private readonly categoriaElegida = toSignal(this.form.controls.categoriaId.valueChanges, {
     initialValue: null,
   });
 
   protected readonly categoriaInactiva = computed(() => {
-    const elegida = this.categorias().find((c) => c.id === this.categoriaElegida());
-    return !!elegida && !elegida.estado;
+    const elegida: any = this.categorias().find((c) => c.id === this.categoriaElegida());
+    return !!elegida && elegida.activo !== 1;
   });
 
-  // Convertido a computed para que funcione con los paréntesis en el HTML
   protected readonly esEdicion = computed(() => !!this.id());
 
   ngOnInit(): void {
