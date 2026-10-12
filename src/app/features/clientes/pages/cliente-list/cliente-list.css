@@ -1,0 +1,8 @@
+.barra { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+.buscador { max-width: 340px; }
+.tamanio { display: flex; align-items: center; gap: 8px; }
+.tamanio .input { width: auto; }
+.ordenable { cursor: pointer; user-select: none; }
+.acciones { display: flex; gap: 8px; }
+.vacio { text-align: center; color: #6b7280; padding: 24px; }
+.paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }

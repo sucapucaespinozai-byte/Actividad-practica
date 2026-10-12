@@ -1,12 +1,14 @@
 export interface Categoria {
   id: number;
   nombre: string;
-  descripcion?: string;
-  estado: boolean;
+  descripcion: string | null;
+  activo: boolean; // Cambiado de 'estado' a 'activo'
+  fechaCreacion: string;
+  fechaModificacion: string | null;
 }
 
 export interface CategoriaRequest {
   nombre: string;
-  descripcion?: string;
-  estado: boolean;
+  descripcion: string | null;
+  activo: boolean; // Cambiado de 'estado' a 'activo'
 }

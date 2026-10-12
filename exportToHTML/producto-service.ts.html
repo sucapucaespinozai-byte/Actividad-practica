@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>producto-service.ts</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#191a1c">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+producto-service.ts</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s2">{ </span><span class="s1">Injectable</span><span class="s2">, </span><span class="s1">inject </span><span class="s2">} </span><span class="s1">from </span><span class="s3">'@angular/core'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s2">{ </span><span class="s1">HttpClient</span><span class="s2">, </span><span class="s1">HttpParams </span><span class="s2">} </span><span class="s1">from </span><span class="s3">'@angular/common/http'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s2">{ </span><span class="s1">Observable </span><span class="s2">} </span><span class="s1">from </span><span class="s3">'rxjs'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s2">{ </span><span class="s1">Producto</span><span class="s2">, </span><span class="s1">ProductoRequest </span><span class="s2">} </span><span class="s1">from </span><span class="s3">'../models/producto.model'</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s2">{ </span><span class="s1">environment </span><span class="s2">} </span><span class="s1">from </span><span class="s3">'../../../../environments/environment'</span><span class="s2">;</span>
+
+<span class="s1">@Injectable</span><span class="s2">({</span>
+  <span class="s1">providedIn</span><span class="s2">: </span><span class="s3">'root'</span><span class="s2">,</span>
+<span class="s2">})</span>
+<span class="s0">export class </span><span class="s1">ProductoService </span><span class="s2">{</span>
+  <span class="s0">private </span><span class="s1">readonly http </span><span class="s2">= </span><span class="s1">inject</span><span class="s2">(</span><span class="s1">HttpClient</span><span class="s2">);</span>
+  <span class="s0">private </span><span class="s1">readonly apiUrl </span><span class="s2">= </span><span class="s3">`</span><span class="s1">$</span><span class="s2">{(</span><span class="s1">environment </span><span class="s2">as </span><span class="s1">any</span><span class="s2">).</span><span class="s1">apiUrl</span><span class="s2">}</span><span class="s3">/productos`</span><span class="s2">;</span>
+
+  <span class="s1">listar</span><span class="s2">(</span><span class="s1">page</span><span class="s2">: </span><span class="s1">number </span><span class="s2">= </span><span class="s4">0</span><span class="s2">, </span><span class="s1">size</span><span class="s2">: </span><span class="s1">number </span><span class="s2">= </span><span class="s4">5</span><span class="s2">, </span><span class="s1">sort</span><span class="s2">: </span><span class="s1">string </span><span class="s2">= </span><span class="s3">'id,asc'</span><span class="s2">): </span><span class="s1">Observable</span><span class="s2">&lt;</span><span class="s1">any</span><span class="s2">&gt; {</span>
+    <span class="s0">const </span><span class="s1">params </span><span class="s2">= </span><span class="s0">new </span><span class="s1">HttpParams</span><span class="s2">().</span><span class="s1">set</span><span class="s2">(</span><span class="s3">'page'</span><span class="s2">, </span><span class="s1">page</span><span class="s2">).</span><span class="s1">set</span><span class="s2">(</span><span class="s3">'size'</span><span class="s2">, </span><span class="s1">size</span><span class="s2">).</span><span class="s1">set</span><span class="s2">(</span><span class="s3">'sort'</span><span class="s2">, </span><span class="s1">sort</span><span class="s2">);</span>
+    <span class="s0">return this</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">get</span><span class="s2">&lt;</span><span class="s1">any</span><span class="s2">&gt;(</span><span class="s0">this</span><span class="s2">.</span><span class="s1">apiUrl</span><span class="s2">, { </span><span class="s1">params </span><span class="s2">});</span>
+  <span class="s2">}</span>
+
+  <span class="s1">obtener</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">number</span><span class="s2">): </span><span class="s1">Observable</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt; {</span>
+    <span class="s0">return this</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">get</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt;(</span><span class="s3">`</span><span class="s1">$</span><span class="s2">{</span><span class="s0">this</span><span class="s2">.</span><span class="s1">apiUrl</span><span class="s2">}</span><span class="s3">/</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">`</span><span class="s2">);</span>
+  <span class="s2">}</span>
+
+  <span class="s1">obtenerPorId</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">number</span><span class="s2">): </span><span class="s1">Observable</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt; {</span>
+    <span class="s0">return this</span><span class="s2">.</span><span class="s1">obtener</span><span class="s2">(</span><span class="s1">id</span><span class="s2">);</span>
+  <span class="s2">}</span>
+
+  <span class="s1">crear</span><span class="s2">(</span><span class="s1">producto</span><span class="s2">: </span><span class="s1">ProductoRequest</span><span class="s2">): </span><span class="s1">Observable</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt; {</span>
+    <span class="s0">return this</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">post</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt;(</span><span class="s0">this</span><span class="s2">.</span><span class="s1">apiUrl</span><span class="s2">, </span><span class="s1">producto</span><span class="s2">);</span>
+  <span class="s2">}</span>
+
+  <span class="s1">actualizar</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">number</span><span class="s2">, </span><span class="s1">producto</span><span class="s2">: </span><span class="s1">ProductoRequest</span><span class="s2">): </span><span class="s1">Observable</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt; {</span>
+    <span class="s0">return this</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">put</span><span class="s2">&lt;</span><span class="s1">Producto</span><span class="s2">&gt;(</span><span class="s3">`</span><span class="s1">$</span><span class="s2">{</span><span class="s0">this</span><span class="s2">.</span><span class="s1">apiUrl</span><span class="s2">}</span><span class="s3">/</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">`</span><span class="s2">, </span><span class="s1">producto</span><span class="s2">);</span>
+  <span class="s2">}</span>
+
+  <span class="s1">darDeBaja</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">number</span><span class="s2">): </span><span class="s1">Observable</span><span class="s2">&lt;</span><span class="s0">void</span><span class="s2">&gt; {</span>
+    <span class="s0">return this</span><span class="s2">.</span><span class="s1">http</span><span class="s2">.</span><span class="s1">delete</span><span class="s2">&lt;</span><span class="s0">void</span><span class="s2">&gt;(</span><span class="s3">`</span><span class="s1">$</span><span class="s2">{</span><span class="s0">this</span><span class="s2">.</span><span class="s1">apiUrl</span><span class="s2">}</span><span class="s3">/</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">`</span><span class="s2">);</span>
+  <span class="s2">}</span>
+<span class="s2">}</span>
+</pre>
+</body>
+</html>

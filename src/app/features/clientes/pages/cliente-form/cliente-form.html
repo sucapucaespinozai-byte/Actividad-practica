@@ -1,94 +1,86 @@
-<div class="container mt-4">
-  <div class="card shadow">
-    <div class="card-header bg-primary text-white">
-      <h3>{{ isEdit() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+<section class="page">
+  <h2>{{ esEdicion() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+
+  @if (error()) {
+    <div class="alerta">{{ error() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="card formulario">
+    <label>
+      DNI
+      <input class="input" formControlName="dni" inputmode="numeric" maxlength="8" />
+    </label>
+    @if (invalido('dni')) {
+      <small class="error">El DNI es obligatorio y debe tener exactamente 8 dígitos.</small>
+    }
+    @if (erroresServidor()['dni']; as mensaje) {
+      <small class="error">{{ mensaje }}</small>
+    }
+
+    <label>
+      Nombres
+      <input class="input" formControlName="nombres" />
+    </label>
+    @if (invalido('nombres')) {
+      <small class="error">Los nombres son obligatorios y deben tener entre 2 y 100 caracteres.</small>
+    }
+    @if (erroresServidor()['nombres']; as mensaje) {
+      <small class="error">{{ mensaje }}</small>
+    }
+
+    <label>
+      Apellidos
+      <input class="input" formControlName="apellidos" />
+    </label>
+    @if (invalido('apellidos')) {
+      <small class="error">Los apellidos son obligatorios y deben tener entre 2 y 100 caracteres.</small>
+    }
+    @if (erroresServidor()['apellidos']; as mensaje) {
+      <small class="error">{{ mensaje }}</small>
+    }
+
+    <label>
+      Correo
+      <input class="input" type="email" formControlName="email" />
+    </label>
+    @if (invalido('email')) {
+      <small class="error">Ingrese un correo válido (máximo 150 caracteres).</small>
+    }
+    @if (erroresServidor()['email']; as mensaje) {
+      <small class="error">{{ mensaje }}</small>
+    }
+
+    <label>
+      Teléfono (opcional)
+      <input class="input" formControlName="telefono" inputmode="numeric" maxlength="9" />
+    </label>
+    @if (invalido('telefono')) {
+      <small class="error">Si ingresa un teléfono, debe tener exactamente 9 dígitos.</small>
+    }
+    @if (erroresServidor()['telefono']; as mensaje) {
+      <small class="error">{{ mensaje }}</small>
+    }
+
+    <label>
+      Dirección (opcional)
+      <textarea class="input" rows="2" formControlName="direccion"></textarea>
+    </label>
+    @if (invalido('direccion')) {
+      <small class="error">Máximo 250 caracteres.</small>
+    }
+    @if (erroresServidor()['direccion']; as mensaje) {
+      <small class="error">{{ mensaje }}</small>
+    }
+
+    <label class="check">
+      <input type="checkbox" formControlName="estado" /> Activo
+    </label>
+
+    <div class="acciones">
+      <a routerLink="/clientes" class="btn">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : (esEdicion() ? 'Actualizar' : 'Registrar') }}
+      </button>
     </div>
-    <div class="card-body">
-      <form [formGroup]="form" (ngSubmit)="guardar()">
-
-        <!-- DNI -->
-        <div class="mb-3">
-          <label class="form-label">DNI</label>
-          <input type="text" class="form-control" formControlName="dni" maxlength="8" placeholder="Ingrese 8 dígitos">
-          @if (form.get('dni')?.touched && form.get('dni')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (form.get('dni')?.hasError('required')) { El DNI es obligatorio. }
-              @if (form.get('dni')?.hasError('pattern')) { El DNI debe tener exactamente 8 dígitos numéricos[cite: 13]. }
-            </div>
-          }
-        </div>
-
-        <!-- Nombres -->
-        <div class="mb-3">
-          <label class="form-label">Nombres</label>
-          <input type="text" class="form-control" formControlName="nombres" placeholder="Nombres del cliente">
-          @if (form.get('nombres')?.touched && form.get('nombres')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (form.get('nombres')?.hasError('required')) { Los nombres son obligatorios. }
-              @if (form.get('nombres')?.hasError('minlength') || form.get('nombres')?.hasError('maxlength')) { Debe tener entre 2 y 100 caracteres[cite: 13]. }
-            </div>
-          }
-        </div>
-
-        <!-- Apellidos -->
-        <div class="mb-3">
-          <label class="form-label">Apellidos</label>
-          <input type="text" class="form-control" formControlName="apellidos" placeholder="Apellidos del cliente">
-          @if (form.get('apellidos')?.touched && form.get('apellidos')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (form.get('apellidos')?.hasError('required')) { Los apellidos son obligatorios. }
-              @if (form.get('apellidos')?.hasError('minlength') || form.get('apellidos')?.hasError('maxlength')) { Debe tener entre 2 y 100 caracteres[cite: 13]. }
-            </div>
-          }
-        </div>
-
-        <!-- Correo Electrónico -->
-        <div class="mb-3">
-          <label class="form-label">Correo Electrónico</label>
-          <input type="email" class="form-control" formControlName="email" placeholder="correo@ejemplo.com">
-          @if (form.get('email')?.touched && form.get('email')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (form.get('email')?.hasError('required')) { El correo es obligatorio. }
-              @if (form.get('email')?.hasError('email')) { Formato de correo inválido[cite: 13]. }
-            </div>
-          }
-        </div>
-
-        <!-- Teléfono -->
-        <div class="mb-3">
-          <label class="form-label">Teléfono (Opcional)</label>
-          <input type="text" class="form-control" formControlName="telefono" maxlength="9" placeholder="9 dígitos (opcional)">
-          @if (form.get('telefono')?.touched && form.get('telefono')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (form.get('telefono')?.hasError('pattern')) { El teléfono debe tener exactamente 9 dígitos[cite: 13]. }
-            </div>
-          }
-        </div>
-
-        <!-- Dirección -->
-        <div class="mb-3">
-          <label class="form-label">Dirección (Opcional)</label>
-          <input type="text" class="form-control" formControlName="direccion" placeholder="Dirección del cliente (máx. 250 caracteres)">
-          @if (form.get('direccion')?.touched && form.get('direccion')?.invalid) {
-            <div class="text-danger small mt-1">
-              @if (form.get('direccion')?.hasError('maxlength')) { Máximo 250 caracteres[cite: 13]. }
-            </div>
-          }
-        </div>
-
-        <!-- Estado -->
-        <div class="mb-3 form-check">
-          <input type="checkbox" class="form-check-input" formControlName="estado" id="estadoCheck">
-          <label class="form-check-label" for="estadoCheck">Activo</label>
-        </div>
-
-        <!-- Botones de Acción -->
-        <div class="d-flex justify-content-end gap-2">
-          <a routerLink="/clientes" class="btn btn-secondary">Cancelar</a>
-          <button type="submit" class="btn btn-success" [disabled]="form.invalid">Guardar</button>
-        </div>
-
-      </form>
-    </div>
-  </div>
-</div>
+  </form>
+</section>

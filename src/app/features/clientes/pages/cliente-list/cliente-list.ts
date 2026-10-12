@@ -1,105 +1,122 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
-import { ClienteService } from '../../services/cliente-service';
+import { CommonModule } from '@angular/common';
 import { Cliente } from '../../models/cliente.model';
+import { ClienteService } from '../../services/cliente-service';
+import { mensajeError } from '../../../../core/utils/http-error';
 
 @Component({
   selector: 'app-cliente-list',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './cliente-list.html',
-  styleUrl: './cliente-list.css'
+  styleUrl: './cliente-list.css',
 })
 export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
 
-  clientes = signal<Cliente[]>([]);
-  cargando = signal<boolean>(false);
-  paginaActual = signal<number>(0);
-  tamanio = signal<number>(10);
-  totalPaginas = signal<number>(0);
-  totalElementos = signal<number>(0);
-  ultima = signal<boolean>(false);
+  protected readonly clientes = signal<Cliente[]>([]);
+  protected readonly cargando = signal(false);
+  protected readonly error = signal<string | null>(null);
 
-  // Parámetros de ordenamiento y filtros
-  ordenarPor = signal<string>('apellidos');
-  direccion = signal<'asc' | 'desc'>('asc');
-  filtro = signal<string>('');
+  // Estado de paginación y orden
+  protected readonly pagina = signal(0);
+  protected readonly tamanio = signal(10);
+  protected readonly ordenarPor = signal('apellidos');
+  protected readonly direccion = signal<'asc' | 'desc'>('asc');
 
-  // Computed para filtrar la página actual por DNI, nombres o apellidos
-  clientesFiltrados = computed(() => {
-    const texto = this.filtro().toLowerCase().trim();
-    const lista = this.clientes();
-    if (!texto) return lista;
+  // Datos que devuelve el backend sobre la paginación
+  protected readonly totalPaginas = signal(0);
+  protected readonly totalElementos = signal(0);
+  protected readonly ultima = signal(true);
 
-    return lista.filter(c =>
-      c.dni.toLowerCase().includes(texto) ||
-      c.nombres.toLowerCase().includes(texto) ||
-      c.apellidos.toLowerCase().includes(texto)
+  protected readonly tamanios = [5, 10, 20];
+  protected readonly filtro = signal('');
+
+  /** Filtra solo la página actual, por DNI o por nombres y apellidos (sin distinguir mayúsculas). */
+  protected readonly filtrados = computed(() => {
+    const texto = this.filtro().trim().toLowerCase();
+    if (!texto) {
+      return this.clientes();
+    }
+    return this.clientes().filter(
+      (c) =>
+        c.dni.includes(texto) ||
+        `${c.nombres} ${c.apellidos}`.toLowerCase().includes(texto) ||
+        `${c.apellidos} ${c.nombres}`.toLowerCase().includes(texto),
     );
   });
 
   ngOnInit(): void {
-    this.cargarClientes();
+    this.cargar();
   }
 
-  cargarClientes(): void {
+  protected cargar(): void {
     this.cargando.set(true);
-    this.clienteService.listar(
-      this.paginaActual(),
-      this.tamanio(),
-      this.ordenarPor(),
-      this.direccion()
-    ).subscribe({
-      next: (response) => {
-        this.clientes.set(response.contenido);
-        this.totalPaginas.set(response.totalPaginas);
-        this.totalElementos.set(response.totalElementos);
-        this.ultima.set(response.ultima);
-        this.cargando.set(false);
-      },
-      error: (err: any) => {
-        console.error('Error al cargar clientes', err);
-        this.cargando.set(false);
-      }
-    });
+    this.error.set(null);
+    this.clienteService
+      .listar(this.pagina(), this.tamanio(), this.ordenarPor(), this.direccion())
+      .subscribe({
+        next: (respuesta: any) => {
+          if (Array.isArray(respuesta)) {
+            this.clientes.set(respuesta);
+            this.totalElementos.set(respuesta.length);
+            this.totalPaginas.set(1);
+          } else {
+            this.clientes.set(respuesta.contenido || respuesta.content || []);
+            this.totalPaginas.set(respuesta.totalPaginas || respuesta.totalPages || 0);
+            this.totalElementos.set(respuesta.totalElementos || respuesta.totalElements || 0);
+            this.ultima.set(respuesta.ultima ?? respuesta.last ?? true);
+          }
+          this.cargando.set(false);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.error.set(mensajeError(err));
+          this.cargando.set(false);
+        },
+      });
   }
 
-  ordenar(campo: string): void {
+  protected cambiarPagina(salto: number): void {
+    this.pagina.update((p) => p + salto);
+    this.cargar();
+  }
+
+  protected cambiarTamanio(valor: string): void {
+    this.tamanio.set(Number(valor));
+    this.pagina.set(0);
+    this.cargar();
+  }
+
+  /** Primer clic: orden ascendente por el campo. Segundo clic: invierte la dirección. */
+  protected ordenar(campo: string): void {
     if (this.ordenarPor() === campo) {
-      this.direccion.update(dir => dir === 'asc' ? 'desc' : 'asc');
+      this.direccion.update((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       this.ordenarPor.set(campo);
       this.direccion.set('asc');
     }
-    this.cargarClientes();
+    this.cargar();
   }
 
-  cambiarPagina(nuevaPagina: number): void {
-    if (nuevaPagina >= 0 && nuevaPagina < this.totalPaginas()) {
-      this.paginaActual.set(nuevaPagina);
-      this.cargarClientes();
+  protected flecha(campo: string): string {
+    if (this.ordenarPor() !== campo) {
+      return '';
     }
+    return this.direccion() === 'asc' ? ' ▲' : ' ▼';
   }
 
-  cambiarTamanio(nuevoTamanio: string | number): void {
-    this.tamanio.set(Number(nuevoTamanio));
-    this.paginaActual.set(0); // Vuelve a la página 0 al cambiar tamaño
-    this.cargarClientes();
-  }
+  /** La baja es lógica: tras el DELETE se recarga la página y la fila pasa a «Inactivo». */
+  protected darDeBaja(cliente: Cliente): void {
+    if (!cliente.id) return;
 
-  eliminar(id: number): void {
-    if (confirm('¿Estás seguro de dar de baja este cliente?')) {
-      this.clienteService.eliminar(id).subscribe({
-        next: () => {
-          this.cargarClientes();
-        },
-        error: (err: any) => {
-          const mensaje = err.error?.message || 'Error al dar de baja el cliente';
-          alert(mensaje);
-        }
-      });
+    if (!confirm(`¿Dar de baja al cliente "${cliente.nombres} ${cliente.apellidos}"?`)) {
+      return;
     }
+    this.clienteService.eliminar(cliente.id).subscribe({
+      next: () => this.cargar(),
+      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
+    });
   }
 }
