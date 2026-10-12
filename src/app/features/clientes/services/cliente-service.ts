@@ -1,15 +1,14 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cliente, ClienteRequest } from '../models/cliente.model';
+import { environment } from '../../../../environments/environment';
 import { PaginaResponse } from '../../../core/models/pagina-response';
+import { Cliente, ClienteRequest } from '../models/cliente.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ClienteService {
   private readonly http = inject(HttpClient);
-  private readonly url = 'http://localhost:8080/api/v1/clientes';
+  private readonly url = `${environment.apiUrl}/clientes`;
 
   listar(
     pagina = 0,

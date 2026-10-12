@@ -1,50 +1,42 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from './layout/main-layout/main-layout';
-import { Inicio } from './features/inicio/inicio';
-import { ClienteList } from './features/clientes/pages/cliente-list/cliente-list';
-import { ClienteForm } from './features/clientes/pages/cliente-form/cliente-form';
-import { ProductoList } from './features/Productos/pages/producto-list/producto-list';
-import { ProductoForm } from './features/Productos/pages/producto-form/producto-form';
 
 export const routes: Routes = [
   {
     path: '',
     component: MainLayout,
     children: [
-      {
-        path: '',
-        redirectTo: 'inicio',
-        pathMatch: 'full',
-      },
+      { path: '', pathMatch: 'full', redirectTo: 'inicio' },
       {
         path: 'inicio',
-        component: Inicio,
+        title: 'Inicio',
+        loadComponent: () => import('./features/inicio/inicio').then((m) => m.Inicio),
       },
       {
         path: 'categorias',
         loadChildren: () =>
-          import('./features/Categorias/categorias.routes').then((m) => m.CATEGORIAS_ROUTES),
+          import('./features/categorias/categorias.routes').then((m) => m.CATEGORIAS_ROUTES),
       },
       {
         path: 'clientes',
-        children: [
-          { path: '', component: ClienteList },
-          { path: 'nuevo', component: ClienteForm },
-          { path: ':id/editar', component: ClienteForm },
-        ],
+        loadChildren: () =>
+          import('./features/clientes/clientes.routes').then((m) => m.CLIENTES_ROUTES),
       },
       {
         path: 'productos',
-        children: [
-          { path: '', component: ProductoList },
-          { path: 'nuevo', component: ProductoForm },
-          { path: ':id/editar', component: ProductoForm },
-        ],
+        loadChildren: () =>
+          import('./features/productos/productos.routes').then((m) => m.PRODUCTOS_ROUTES),
+      },
+      {
+        path: 'ventas',
+        loadChildren: () => import('./features/ventas/ventas.routes').then((m) => m.VENTAS_ROUTES),
       },
     ],
   },
   {
     path: '**',
-    redirectTo: 'inicio',
+    title: 'Página no encontrada',
+    loadComponent: () =>
+      import('./shared/pages/no-encontrado/no-encontrado').then((m) => m.NoEncontrado),
   },
 ];

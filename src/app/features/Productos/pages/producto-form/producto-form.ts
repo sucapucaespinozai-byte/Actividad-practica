@@ -5,8 +5,8 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { erroresDeValidacion, mensajeError } from '../../../../core/utils/http-error';
-import { Categoria } from '../../../Categorias/models/categoria.model';
-import { CategoriaService } from '../../../Categorias/services/categoria-service';
+import { Categoria } from '../../../categorias/models/categoria.model';
+import { CategoriaService } from '../../../categorias/services/categoria-service';
 import { ProductoRequest } from '../../models/producto.model';
 import { ProductoService } from '../../services/producto-service';
 
