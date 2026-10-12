@@ -1,0 +1,4 @@
+.filtros { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; background: #dcfce7; color: #166534; }
+.badge.anulada { background: #fee2e2; color: #991b1b; }
+.vacio { text-align: center; color: #64748b; padding: 2rem; }

@@ -1,0 +1,35 @@
+.filtros {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.columna-barra {
+  width: 30%;
+}
+
+.contenedor-barra {
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 12px;
+  width: 100%;
+}
+
+.barra {
+  background-color: #1e3a8a;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.fila-totales {
+  background-color: #f8fafc;
+  font-weight: bold;
+}
+
+.vacio {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}

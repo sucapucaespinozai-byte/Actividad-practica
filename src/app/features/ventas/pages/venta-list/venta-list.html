@@ -1,0 +1,49 @@
+<section class="page">
+  <header class="page-header">
+    <h2>Consulta de Ventas</h2>
+    <a routerLink="/ventas/nuevo" class="btn btn-primary">+ Nueva Venta</a>
+  </header>
+
+  <form [formGroup]="filtros" (ngSubmit)="buscar()" class="card filtros">
+    <label>Estado
+      <select class="input" formControlName="estado">
+        <option value="">Todos</option>
+        <option value="REGISTRADA">Registrada</option>
+        <option value="ANULADA">Anulada</option>
+      </select>
+    </label>
+    <label>Desde <input class="input" type="date" formControlName="desde" /></label>
+    <label>Hasta <input class="input" type="date" formControlName="hasta" /></label>
+    <button type="submit" class="btn btn-secondary">Filtrar</button>
+    <button type="button" class="btn btn-outline" (click)="imprimirConsulta()">Imprimir consulta</button>
+  </form>
+
+  <table class="tabla">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Fecha</th>
+      <th>Cliente</th>
+      <th>Estado</th>
+      <th>Total</th>
+      <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+      @for (v of ventas(); track v.id) {
+        <tr>
+          <td>{{ v.id }}</td>
+          <td>{{ v.fechaRegistro | date: 'short' }}</td>
+          <td>{{ v.clienteNombre }}</td>
+          <td><span class="badge" [class.anulada]="v.estado === 'ANULADA'">{{ v.estado }}</span></td>
+          <td>{{ v.total | currency: 'PEN': 'S/ ' }}</td>
+          <td>
+            <a [routerLink]="['/ventas/detalle', v.id]" class="link">Ver comprobante</a>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6" class="vacio">No se encontraron ventas registradas.</td></tr>
+      }
+    </tbody>
+  </table>
+</section>

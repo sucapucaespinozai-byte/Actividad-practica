@@ -1,0 +1,81 @@
+<section class="page">
+  <header class="page-header"><h2>Nueva Venta (Punto de Venta)</h2></header>
+
+  @if (errorMensaje()) {
+    <div class="alerta">{{ errorMensaje() }}</div>
+  }
+
+  <form [formGroup]="form" class="card">
+    <div class="seccion-cliente">
+      <h3>1. Seleccionar Cliente</h3>
+      <select class="input" formControlName="clienteId">
+        <option [value]="0" disabled>-- Seleccione cliente --</option>
+        @for (c of clientes(); track c.id) {
+          <option [value]="c.id">{{ c.nombres }} {{ c.apellidos }} (DNI: {{ c.dni }})</option>
+        }
+      </select>
+    </div>
+
+    <div class="seccion-productos">
+      <h3>2. Agregar Productos con Stock</h3>
+      <div class="lista-busqueda">
+        @for (p of productos(); track p.id) {
+          <div class="item-prod" (click)="agregarProducto(p)">
+            <span>{{ p.nombre || p.name }} - S/ {{ p.precio }} (Stock disponible: {{ p.stock }})</span>
+            <button type="button" class="btn btn-sm">+ Agregar</button>
+          </div>
+        } @empty {
+          <p class="vacio">No hay productos con stock disponible.</p>
+        }
+      </div>
+    </div>
+
+    <div class="seccion-detalle">
+      <h3>3. Detalle de la Venta</h3>
+      <table class="tabla">
+        <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+          <th>Acción</th>
+        </tr>
+        </thead>
+        <tbody formArrayName="detalles">
+          @for (control of detalles.controls; track $index; let i = $index) {
+            <tr [formGroupName]="i">
+              <td>{{ control.value.nombre }}</td>
+              <td>{{ control.value.precio | currency: 'PEN': 'S/ ' }}</td>
+              <td><input type="number" class="input input-sm" formControlName="cantidad" min="1" /></td>
+              <td>{{ control.value.precio * control.value.cantidad | currency: 'PEN': 'S/ ' }}</td>
+              <td><button type="button" class="btn btn-danger btn-sm" (click)="quitarDetalle(i)">✕</button></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="vacio">No hay productos agregados en la venta.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-form">
+      <h3>Total Estimado: {{ calcularTotalEstimado() | currency: 'PEN': 'S/ ' }}</h3>
+      <label><input type="checkbox" formControlName="imprimirAlRegistrar" /> Imprimir comprobante al registrar</label>
+      <button type="button" class="btn btn-primary" (click)="revisarVenta()">Revisar venta</button>
+    </div>
+  </form>
+
+  @if (resumenVisible()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Confirmar Registro de Venta</h3>
+        <p>Total estimado: <strong>{{ calcularTotalEstimado() | currency: 'PEN': 'S/ ' }}</strong></p>
+        <p>Items en la boleta: <strong>{{ detalles.length }}</strong></p>
+        <div class="modal-botones">
+          <button type="button" class="btn btn-secondary" (click)="volver()">Volver</button>
+          <button type="button" class="btn btn-primary" [disabled]="procesando()" (click)="confirmarVenta()">Confirmar venta</button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,45 @@
+<section class="page comprobante">
+  @if (venta(); as v) {
+    <div class="card comprobante-card">
+      @if (v.estado === 'ANULADA') {
+        <div class="sello-anulado">ANULADA</div>
+      }
+      <h2>Comprobante de Venta #{{ v.id }}</h2>
+      <p><strong>Fecha:</strong> {{ v.fechaRegistro | date: 'medium' }}</p>
+      <p><strong>Cliente:</strong> {{ v.clienteNombre }}</p>
+      <p><strong>Estado:</strong> {{ v.estado }}</p>
+
+      <table class="tabla">
+        <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio Unit.</th>
+          <th>Subtotal</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (d of v.detalles; track d.id) {
+            <tr>
+              <td>{{ d.productoNombre }}</td>
+              <td>{{ d.cantidad }}</td>
+              <td>{{ d.precio | currency: 'PEN': 'S/ ' }}</td>
+              <td>{{ d.subtotal | currency: 'PEN': 'S/ ' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="vacio">No hay detalles disponibles en este comprobante.</td></tr>
+          }
+        </tbody>
+      </table>
+
+      <h3 class="total-final">Total Pagado: {{ v.total | currency: 'PEN': 'S/ ' }}</h3>
+
+      <div class="no-imprimir botones-comprobante">
+        <a routerLink="/ventas" class="btn btn-secondary">Volver a la consulta</a>
+        <button type="button" class="btn btn-primary" (click)="imprimir()">Imprimir comprobante</button>
+      </div>
+    </div>
+  } @else {
+    <p class="vacio">Cargando comprobante o la venta no existe...</p>
+  }
+</section>
